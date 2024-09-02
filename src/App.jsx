@@ -1,58 +1,57 @@
-import { useState, useEffect } from "react"
-import TodoInput from "./components/TodoInput"
-import TodoList from "./components/TodoList"
+import { useState } from 'react';
+import TodoInput from './components/TodoInput.jsx';
+import TodoList from './components/TodoList.jsx';
 
 function App() {
-  const [todos, setTodos] = useState([])
-  const [todoValue, setTodoValue] = useState('')
-
-  function persistData(newList) {
-    localStorage.setItem('todos', JSON.stringify({ todos: newList }))
-  }
+  const [todos, setTodos] = useState([]);
+  const [todoValue, setTodoValue] = useState('');
+  const [editIndex, setEditIndex] = useState(null);
 
   function handleAddTodos(newTodo) {
-    const newTodoList = [...todos, newTodo]
-    persistData(newTodoList)
-    setTodos(newTodoList)
+    const newTodoList = [...todos, newTodo];
+    setTodos(newTodoList);
+    setTodoValue(''); // Clear input field after adding
   }
 
-  function handleDeleteTodo(index) {
-    const newTodoList = todos.filter((todo, todoIndex) => {
-      return todoIndex !== index
-    })
-    persistData(newTodoList)
-    setTodos(newTodoList)
+  function handleDeleteTodos(index) {
+    const newTodoList = todos.filter((_, todoIndex) => todoIndex !== index);
+    setTodos(newTodoList);
   }
 
   function handleEditTodo(index) {
-    const valueToBeEdited = todos[index]
-    setTodoValue(valueToBeEdited)
-    handleDeleteTodo(index)
+    const valueToBeEdited = todos[index];
+    setTodoValue(valueToBeEdited);
+    setEditIndex(index);
   }
 
-  useEffect(() => {
-    if (!localStorage) {
-      return
+  function handleSaveTodo() {
+    if (editIndex !== null) {
+      const updatedTodos = todos.map((todo, index) =>
+        index === editIndex ? todoValue : todo
+      );
+      setTodos(updatedTodos);
+      setTodoValue('');
+      setEditIndex(null);
+    } else {
+      handleAddTodos(todoValue);
     }
-
-    let localTodos = localStorage.getItem('todos')
-    if (!localTodos) {
-      return
-    }
-
-    console.log(localTodos)
-    localTodos = JSON.parse(localTodos).todos
-    setTodos(localTodos)
-
-  }, [])
+  }
 
   return (
     <>
-    <h2> To Do List Application</h2>
-      <TodoInput todoValue={todoValue} setTodoValue={setTodoValue} handleAddTodos={handleAddTodos} />
-      <TodoList handleEditTodo={handleEditTodo} handleDeleteTodo={handleDeleteTodo} todos={todos} />
+      <TodoInput
+        todoValue={todoValue}
+        setTodoValue={setTodoValue}
+        handleSaveTodo={handleSaveTodo}
+      />
+
+      <TodoList 
+        handleEditTodo={handleEditTodo}
+        handleDeleteTodo={handleDeleteTodos}
+        todos={todos}
+      />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
